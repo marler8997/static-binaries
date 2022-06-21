@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+import os
+import sys
+import shutil
+import subprocess
+
+import common
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+
+sys.path.insert(0, os.path.join(REPO_ROOT, "pythonlib"))
+import buildlib
+
+ARCHIVE_BASENAME = common.NAME_VERSION + ".tar.gz"
+SRC_URL = "https://github.com/ninja-build/ninja/archive/refs/tags/v{}.tar.gz".format(common.VERSION)
+
+def main():
+    archive_path = buildlib.download(SRC_URL, ARCHIVE_BASENAME)
+
+    buildlib.rmtree(common.SRC_PATH)
+    buildlib.run(["tar", "-C", SCRIPT_DIR, "-xf", archive_path])
+
+    os.environ["LDFLAGS"] = "-static"
+    buildlib.run(["./configure.py", "--bootstrap"], cwd=common.SRC_PATH)
+
+main()
