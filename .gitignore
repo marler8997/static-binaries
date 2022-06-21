@@ -1,0 +1,4 @@
+/downloads/
+out/
+__pycache__/
+*.tar*
