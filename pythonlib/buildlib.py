@@ -4,7 +4,10 @@ import shutil
 import subprocess
 import multiprocessing
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 MAKE_PARALLEL_ARGS = ["-j" + str(multiprocessing.cpu_count())]
+DOWNLOADS_DIR = os.path.join(REPO_ROOT, "downloads")
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -16,15 +19,24 @@ def run(*args, **kwargs):
     sys.stdout.flush()
     return subprocess.run(*args, **kwargs)
 
-def download(url, filename):
-    makedirs(os.path.dirname(filename))
-    tmp_filename = filename + ".downloading"
-    if os.path.exists(tmp_filename):
-        os.remove(tmp_filename)
-    if shutil.which("wget"):
-        run(["wget", url, "--output-document", tmp_filename])
-    run(["curl", url, "--output", tmp_filename])
-    os.rename(tmp_filename, filename)
+def download(url, file_basename):
+    path = os.path.join(DOWNLOADS_DIR, file_basename)
+    if os.path.exists(path):
+        eprint("{} already downloaded".format(file_basename))
+    else:
+        makedirs(DOWNLOADS_DIR)
+        #
+        # TODO: use lock file if we want to support parallel jobs
+        #
+        tmp_path = path + ".downloading"
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        eprint("downloading {}...".format(file_basename))
+        if shutil.which("wget"):
+            run(["wget", url, "--output-document", tmp_path])
+        run(["curl", url, "--output", tmp_path])
+        os.rename(tmp_path, path)
+    return path
 
 def makedirs(path):
     if not os.path.exists(path):

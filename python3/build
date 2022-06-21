@@ -16,16 +16,11 @@ PYTHON_NAME_VERSION = "Python-" + common.PYTHON_VERSION
 PYTHON_ARCHIVE_BASENAME = PYTHON_NAME_VERSION + ".tar.xz"
 PYTHON_SRC_URL = "https://www.python.org/ftp/python/{}/{}".format(common.PYTHON_VERSION, PYTHON_ARCHIVE_BASENAME)
 
-DOWNLOADS_DIR = os.path.join(REPO_ROOT, "downloads")
-
 def appendSetupWithFile(setup_dst, from_file):
     buildlib.appendFile(setup_dst, "\n" + "# copied from " + from_file + "\n" + buildlib.readFile(from_file) + "\n")
 
 def main():
-    archive_path = os.path.join(DOWNLOADS_DIR, PYTHON_ARCHIVE_BASENAME)
-    if not os.path.exists(archive_path):
-        buildlib.makedirs(DOWNLOADS_DIR)
-        buildlib.download(PYTHON_SRC_URL, archive_path)
+    archive_path = buildlib.download(PYTHON_SRC_URL, PYTHON_ARCHIVE_BASENAME)
 
     src_path = os.path.join(SCRIPT_DIR, PYTHON_NAME_VERSION)
     buildlib.rmtree(src_path)
