@@ -3,68 +3,33 @@ import os
 import sys
 import shutil
 import subprocess
-import multiprocessing
 
 import common
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+
+sys.path.insert(0, os.path.join(REPO_ROOT, "pythonlib"))
+import buildlib
+
 PYTHON_NAME_VERSION = "Python-" + common.PYTHON_VERSION
 PYTHON_ARCHIVE_BASENAME = PYTHON_NAME_VERSION + ".tar.xz"
 PYTHON_SRC_URL = "https://www.python.org/ftp/python/{}/{}".format(common.PYTHON_VERSION, PYTHON_ARCHIVE_BASENAME)
 
 DOWNLOADS_DIR = os.path.join(REPO_ROOT, "downloads")
-MAKE_PARALLEL_ARGS = ["-j" + str(multiprocessing.cpu_count())]
-
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
-
-def run(*args, **kwargs):
-    if not 'check' in kwargs:
-        kwargs['check'] = True
-    eprint("[RUN] " + subprocess.list2cmdline(*args))
-    sys.stdout.flush()
-    return subprocess.run(*args, **kwargs)
-
-def download(url, filename):
-    makedirs(os.path.dirname(filename))
-    tmp_filename = filename + ".downloading"
-    if os.path.exists(tmp_filename):
-        os.remove(tmp_filename)
-    if shutil.which("wget"):
-        run(["wget", url, "--output-document", tmp_filename])
-    run(["curl", url, "--output", tmp_filename])
-    os.rename(tmp_filename, filename)
-
-def makedirs(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
-
-def rmtree(path):
-    if os.path.exists(path):
-        shutil.rmtree(path)
-
-def readFile(file_path):
-    with open(file_path, "r") as f:
-        return f.read()
-
-def appendFile(file_path, content):
-    with open(file_path, "a") as f:
-        f.write(content)
 
 def appendSetupWithFile(setup_dst, from_file):
-    appendFile(setup_dst, "\n" + "# copied from " + from_file + "\n" + readFile(from_file) + "\n")
-
+    buildlib.appendFile(setup_dst, "\n" + "# copied from " + from_file + "\n" + buildlib.readFile(from_file) + "\n")
 
 def main():
     archive_path = os.path.join(DOWNLOADS_DIR, PYTHON_ARCHIVE_BASENAME)
     if not os.path.exists(archive_path):
-        makedirs(DOWNLOADS_DIR)
-        download(PYTHON_SRC_URL, archive_path)
+        buildlib.makedirs(DOWNLOADS_DIR)
+        buildlib.download(PYTHON_SRC_URL, archive_path)
 
     src_path = os.path.join(SCRIPT_DIR, PYTHON_NAME_VERSION)
-    rmtree(src_path)
-    run(["tar", "-C", SCRIPT_DIR, "-xf", archive_path])
+    buildlib.rmtree(src_path)
+    buildlib.run(["tar", "-C", SCRIPT_DIR, "-xf", archive_path])
     setup_dst = os.path.join(src_path, "Modules", "Setup.local")
     shutil.copyfile(os.path.join(SCRIPT_DIR, "Setup.local"), setup_dst)
 
@@ -80,20 +45,20 @@ def main():
         extra_libs.add("-lffi")
         appendSetupWithFile(setup_dst, os.path.join(SCRIPT_DIR, "Setup.ctypes"))
     if include_ssl:
-        result = run(["pkg-config", "--static", "--libs", "openssl"], capture_output=True)
+        result = buildlib.run(["pkg-config", "--static", "--libs", "openssl"], capture_output=True)
         libs = result.stdout.decode('utf8').split()
         print("OpenSSL static libraries: {}".format(libs))
         for lib in libs:
             extra_libs.add(lib)
 
-        result = run(["openssl", "version", "-d"], capture_output=True)
+        result = buildlib.run(["openssl", "version", "-d"], capture_output=True)
         prefix = b"OPENSSLDIR: \""
         assert(result.stdout.startswith(prefix))
         openssl_dir = result.stdout[len(prefix):]
         end = openssl_dir.find(b"\"")
         assert(end != -1)
         openssl_dir = openssl_dir[:end].decode('utf8')
-        appendFile(setup_dst, "# generated from build script:\nOPENSSL={}\n".format(openssl_dir))
+        buildlib.appendFile(setup_dst, "# generated from build script:\nOPENSSL={}\n".format(openssl_dir))
         appendSetupWithFile(setup_dst, os.path.join(SCRIPT_DIR, "Setup.ssl"))
 
     if len(extra_libs) > 0:
@@ -102,12 +67,12 @@ def main():
             libs += " " + lib
         extra_config_args.append("--with-libs=" + libs)
 
-    run(["./configure",
+    buildlib.run(["./configure",
          "--prefix=" + common.OUT_DIR,
          "LDFLAGS=-static",
          "LINKFORSHARED= ",
     ] + extra_config_args, cwd=src_path)
-    rmtree(common.OUT_DIR)
-    run(["make", "install"] + MAKE_PARALLEL_ARGS, cwd=src_path)
+    buildlib.rmtree(common.OUT_DIR)
+    buildlib.run(["make", "install"] + buildlib.MAKE_PARALLEL_ARGS, cwd=src_path)
 
 main()
