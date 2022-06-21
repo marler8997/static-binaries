@@ -34,7 +34,8 @@ def download(url, file_basename):
         eprint("downloading {}...".format(file_basename))
         if shutil.which("wget"):
             run(["wget", url, "--output-document", tmp_path])
-        run(["curl", url, "--output", tmp_path])
+        else:
+            run(["curl", url, "--output", tmp_path])
         os.rename(tmp_path, path)
     return path
 
