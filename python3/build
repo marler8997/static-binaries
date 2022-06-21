@@ -12,17 +12,17 @@ REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 sys.path.insert(0, os.path.join(REPO_ROOT, "pythonlib"))
 import buildlib
 
-PYTHON_NAME_VERSION = "Python-" + common.PYTHON_VERSION
-PYTHON_ARCHIVE_BASENAME = PYTHON_NAME_VERSION + ".tar.xz"
-PYTHON_SRC_URL = "https://www.python.org/ftp/python/{}/{}".format(common.PYTHON_VERSION, PYTHON_ARCHIVE_BASENAME)
+NAME_VERSION = "Python-" + common.VERSION
+ARCHIVE_BASENAME = NAME_VERSION + ".tar.xz"
+SRC_URL = "https://www.python.org/ftp/python/{}/{}".format(common.VERSION, ARCHIVE_BASENAME)
 
 def appendSetupWithFile(setup_dst, from_file):
     buildlib.appendFile(setup_dst, "\n" + "# copied from " + from_file + "\n" + buildlib.readFile(from_file) + "\n")
 
 def main():
-    archive_path = buildlib.download(PYTHON_SRC_URL, PYTHON_ARCHIVE_BASENAME)
+    archive_path = buildlib.download(SRC_URL, ARCHIVE_BASENAME)
 
-    src_path = os.path.join(SCRIPT_DIR, PYTHON_NAME_VERSION)
+    src_path = os.path.join(SCRIPT_DIR, NAME_VERSION)
     buildlib.rmtree(src_path)
     buildlib.run(["tar", "-C", SCRIPT_DIR, "-xf", archive_path])
     setup_dst = os.path.join(src_path, "Modules", "Setup.local")

@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.join(REPO_ROOT, "pythonlib"))
 import buildlib
 
 def main():
-    tar_path = os.path.join(SCRIPT_DIR, "python-" + common.PYTHON_VERSION + ".tar")
+    tar_path = os.path.join(SCRIPT_DIR, "python-" + common.VERSION + ".tar")
     buildlib.run(["tar", "-C", common.OUT_DIR, "-cvf", tar_path, "."])
     print("create-pkg: compressing...(this can take a while)")
     buildlib.run(["xz", "-f", tar_path])
