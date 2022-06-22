@@ -51,7 +51,10 @@ def readFile(file_path):
     with open(file_path, "r") as f:
         return f.read()
 
+def writeFile(file_path, content):
+    with open(file_path, "w") as f:
+        return f.write(content)
+
 def appendFile(file_path, content):
     with open(file_path, "a") as f:
         f.write(content)
-

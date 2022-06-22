@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+import os
+import sys
+import shutil
+import subprocess
+import re
+
+import common
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+
+sys.path.insert(0, os.path.join(REPO_ROOT, "pythonlib"))
+import buildlib
+
+NAME_VERSION = "cmake-{}".format(common.VERSION)
+ARCHIVE_BASENAME = NAME_VERSION + ".tar.gz"
+SRC_URL = "https://github.com/Kitware/CMake/releases/download/v{}/{}".format(common.VERSION, ARCHIVE_BASENAME)
+
+def patch(src_dir):
+    kwsys_cmake_path = os.path.join(src_dir, "Source/kwsys/CMakeLists.txt")
+    content = buildlib.readFile(kwsys_cmake_path)
+    needle = "KWSYS_USE_DynamicLoader 1"
+    new_content, sub_count = re.subn(needle, "KWSYS_USE_DynamicLoader 0", content)
+    if sub_count != 1:
+        sys.exit("did not find '{}' in '{}' to patch".format(needle, kwsys_cmake_path))
+    buildlib.writeFile(kwsys_cmake_path, new_content)
+
+def main():
+    archive_path = buildlib.download(SRC_URL, ARCHIVE_BASENAME)
+
+    src_dir = os.path.join(SCRIPT_DIR, NAME_VERSION)
+    buildlib.rmtree(src_dir)
+    buildlib.run(["tar", "-C", SCRIPT_DIR, "-xf", archive_path])
+    patch(src_dir)
+
+    zigcc = os.path.join(SCRIPT_DIR, "zigcc")
+    zigcpp = os.path.join(SCRIPT_DIR, "zigc++")
+
+    out_dir = os.path.join(SCRIPT_DIR, "out")
+    buildlib.rmtree(out_dir)
+    os.mkdir(out_dir)
+    #os.environ["LDFLAGS"] = "-static"
+    buildlib.run([
+        "cmake",
+        "-B", out_dir,
+        "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a",
+        "-DBUILD_SHARED_LIBS=OFF",
+        "-DCMAKE_EXE_LINKER_FLAGS=-static",
+        "-DSHARED_LIBS_SUPPORTED=0",
+        "-DCMAKE_C_COMPILER=" + zigcc,
+        "-DCMAKE_CXX_COMPILER=" + zigcpp,
+        #"-DKWSYS_NAMESPACE=",
+        src_dir,
+    ])
+    #sys.exit("here")
+    buildlib.run(["make", "-C", out_dir] + buildlib.MAKE_PARALLEL_ARGS)
+
+main()
