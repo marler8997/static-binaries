@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+import os
+import sys
+import common
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+
+sys.path.insert(0, os.path.join(REPO_ROOT, "pythonlib"))
+import buildlib
+
+ARCHIVE_BASENAME = f"cmake-{common.VERSION}-linux-x86_64.tar.gz"
+SRC_URL = f"https://github.com/Kitware/CMake/releases/download/v{common.VERSION}/{ARCHIVE_BASENAME}"
+
+def main():
+    MKBLOB = buildlib.loadPkgFile(os.path.join(REPO_ROOT, "mkblob", "common.py")).MKBLOB
+    if not os.path.exists(MKBLOB):
+        buildlib.run([os.path.join(REPO_ROOT, "mkblob", "build")])
+        assert(os.path.exists(MKBLOB))
+
+    archive_path = buildlib.download(SRC_URL, ARCHIVE_BASENAME)
+
+    buildlib.rmtree(common.SRC_PATH)
+    buildlib.run(["tar", "-C", SCRIPT_DIR, "-xf", archive_path])
+
+    cmake_bin = os.path.join(common.SRC_PATH, "bin", "cmake")
+    # NOTE: output filename (-o FILENAME) cannot have slashes in it
+    buildlib.run([MKBLOB, cmake_bin, "-o", "cmake.blob", "-static"], cwd=common.SRC_PATH)
+    os.rename(cmake_bin, cmake_bin + ".dynamic")
+    os.rename(os.path.join(common.SRC_PATH, "cmake.blob"), cmake_bin)
+
+main()

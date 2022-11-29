@@ -55,3 +55,15 @@ def appendFile(file_path, content):
     with open(file_path, "a") as f:
         f.write(content)
 
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+def loadPkgFile(filename):
+    file_globals = {"__file__": filename}
+    file_locals = AttrDict()
+    with open(filename, "r") as f:
+        code = compile(f.read(), filename, "exec")
+        exec(code, file_globals, file_locals)
+    return file_locals

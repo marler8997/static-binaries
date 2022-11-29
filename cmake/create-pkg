@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+import common
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+
+sys.path.insert(0, os.path.join(REPO_ROOT, "pythonlib"))
+import buildlib
+
+def main():
+    bin_dir = os.path.join(common.SRC_PATH, "bin")
+    tar_path = os.path.join(SCRIPT_DIR, "cmake-" + common.VERSION + ".tar")
+    buildlib.run(["tar", "-C", common.SRC_PATH, "-cvf", tar_path, "bin/cmake"])
+    buildlib.run(["xz", "-f", tar_path])
+
+main()

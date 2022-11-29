@@ -2,6 +2,7 @@
 import os
 import sys
 import subprocess
+import shutil
 
 import common
 
@@ -16,7 +17,7 @@ def main():
     buildlib.makedirs(bin_dir)
     mkblob_bin = os.path.join(bin_dir, "mkblob")
     if not os.path.exists(mkblob_bin):
-        os.rename(os.path.join(common.SRC_PATH, "mkblob"), mkblob_bin)
+        shutil.copy2(common.MKBLOB, mkblob_bin)
     tar_path = os.path.join(SCRIPT_DIR, "mkblob-" + common.VERSION + ".tar")
     buildlib.run(["tar", "-C", common.SRC_PATH, "-cvf", tar_path, "bin/mkblob"])
     buildlib.run(["xz", "-f", tar_path])
