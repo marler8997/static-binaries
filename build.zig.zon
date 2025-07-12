@@ -1,0 +1,7 @@
+.{
+    .name = .staticbinaries,
+    .fingerprint = 0xc512d37d6b3ed1aa,
+    .version = "0.0.0",
+    .minimum_zig_version = "0.14.1",
+    .paths = .{"."},
+}

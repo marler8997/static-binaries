@@ -1,0 +1,13 @@
+.{
+    .name = .cpython,
+    .fingerprint = 0x3224901d1babdd14,
+    .version = "0.0.0",
+    .minimum_zig_version = "0.14.1",
+    .dependencies = .{
+        .cpython = .{
+            .url = "git+https://github.com/allyourcodebase/cpython#1109b165347080c0c77e9fc6a6b644ed2d4031d6",
+            .hash = "cpython-3.11.5-2-WIrcCSNxLwTyRoAWjrdmNqgs00UaH7CTJJq34gCpkki1",
+        },
+    },
+    .paths = .{"."},
+}
