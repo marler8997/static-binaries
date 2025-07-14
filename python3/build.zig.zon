@@ -4,9 +4,17 @@
     .version = "0.0.0",
     .minimum_zig_version = "0.14.1",
     .dependencies = .{
-        .cpython = .{
-            .url = "git+https://github.com/allyourcodebase/cpython#1109b165347080c0c77e9fc6a6b644ed2d4031d6",
-            .hash = "cpython-3.11.5-2-WIrcCSNxLwTyRoAWjrdmNqgs00UaH7CTJJq34gCpkki1",
+        .upstream = .{
+            .url = "git+https://github.com/python/cpython#d2340ef25721b6a72d45d4508c672c4be38c67d3",
+            .hash = "N-V-__8AABDkxQWDw9b21RiSHxBb2ErJ78saCf1XL88YMoT7",
+        },
+        .libz = .{
+            .url = "https://github.com/allyourcodebase/zlib/archive/6c72830882690c1eb2567a537525c3f432c1da50.tar.gz",
+            .hash = "zlib-1.3.1-ZZQ7lVgMAACwO4nUUd8GLhsuQ5JQq_VAhlEiENJTUv6h",
+        },
+        .openssl = .{
+            .url = "https://github.com/allyourcodebase/openssl/archive/f348124c5382bcc377f1b3277357cbf2ed2fb8db.tar.gz",
+            .hash = "openssl-3.3.1-2-TC9C3Se3ZACF5WO_CjoD7Bt_X94oCsAAbbwhOp1rTZBe",
         },
     },
     .paths = .{"."},
